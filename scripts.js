@@ -146,6 +146,11 @@ var data = [
     }
 ]
 var elements = {}
+var emojis = {
+    "unlock": String.fromCodePoint(0x1F513),
+    "lock": String.fromCodePoint(0x1F512),
+    "fire": String.fromCodePoint(0x1F525),
+}
 
 function addTh(tr, el) {
     let th = document.createElement("th")
@@ -161,18 +166,29 @@ function setup() {
     let inputs = document.getElementById("inputs")
     let max_heat = 0
     for (let i = 0; i < data.length; i++) {
-        let row = document.createElement("tr")
-        inputs.appendChild(row)
-        
         let datum = data[i]
         let heats = datum["heats"]
         let levels = datum["levels"]
         max_heat += heats[heats.length - 1]
 
+        let row = document.createElement("tr")
+        inputs.appendChild(row)
+
+        let el_name_wrapper = document.createElement("span")
+        datum["el_name_wrapper"] = el_name_wrapper
+        addTh(row, el_name_wrapper)
+
         let el_name = document.createElement("span")
         el_name.innerText = datum["name"]
         datum["el_name"] = el_name
-        addTh(row, el_name)
+        el_name_wrapper.appendChild(el_name)
+
+        let el_flavor = document.createElement("span")
+        el_flavor.innerText = levels[0]
+        el_flavor.setAttribute("class", "flavor_long")
+        datum["el_flavor"] = el_flavor
+        el_name_wrapper.appendChild(document.createElement("br"))
+        el_name_wrapper.appendChild(el_flavor)
 
         let el_input = document.createElement("input")
         el_input.type = "range"
@@ -184,7 +200,6 @@ function setup() {
         addTh(row, el_input)
 
         let el_heat_flavor = document.createElement("span")
-        el_heat_flavor.innerText = "+0 heat"
         datum["el_heat_flavor"] = el_heat_flavor
         addTh(row, el_heat_flavor)
 
@@ -194,18 +209,13 @@ function setup() {
         let el_lock = document.createElement("input")
         el_lock.type = "checkbox"
         el_lock.checked = locks[i]
+        el_lock.setAttribute("onChange", "refresh()")
         datum["el_lock"] = el_lock
         el_lock_wrapper.appendChild(el_lock)
 
         let el_lock_flavor = document.createElement("span")
-        el_lock_flavor.innerText = "lock"
         datum["el_lock_flavor"] = el_lock_flavor
         el_lock_wrapper.appendChild(el_lock_flavor)
-
-        let el_flavor = document.createElement("span")
-        el_flavor.innerText = levels[0]
-        datum["el_flavor"] = el_flavor
-        addTh(row, el_flavor)
     }
     elements["total_heat"] = document.getElementById("total_heat")
     elements["target_heat"] = document.getElementById("target_heat")
@@ -223,8 +233,11 @@ function refresh() {
         let value = parseInt(datum["el_input"].value, 10)
         let level = datum["levels"][value]
         let heat = datum["heats"][value]
+        let locked = datum["el_lock"].checked
         datum["el_flavor"].innerText = level
-        datum["el_heat_flavor"].innerText = "+" + heat + " heat"
+        datum["el_heat_flavor"].innerText = heat + emojis["fire"]
+        datum["el_lock_flavor"].innerText = emojis[locked ? "lock" : "unlock"]
+        datum["el_name_wrapper"].setAttribute("class", locked ? "locked" : "")
         total_heat += heat
     }
     elements["total_heat"].innerText = total_heat

@@ -10,13 +10,20 @@ html body {
     word-wrap: break-word;
 }
 
-table, th, td {
+table,
+th,
+td {
     text-align: left;
-    border: 0.5px solid;
-    border-collapse: collapse;
     padding: 5px;
     font-weight: normal;
 }
 
-@media (prefers-color-scheme: dark) {
+.flavor_long {
+    font-size: 75%;
 }
+
+.locked {
+    color: gray;
+}
+
+@media (prefers-color-scheme: dark) {}
