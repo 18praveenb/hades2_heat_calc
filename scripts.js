@@ -249,7 +249,7 @@ function randomize() {
     max_heat = parseInt(elements["target_heat"].max, 10)
     let solns = randomizeHelper(0, target_heat, 0, max_heat)
     if (solns.length == 0) {
-        alert("Target heat cannot be achieved with current locked values.")
+        alert("Target fear cannot be achieved with current locked values.")
     } else {
         let soln = solns[Math.floor(Math.random() * solns.length)].reverse()
         for (let i = 0; i < data.length; i++) {
