@@ -15,7 +15,11 @@
     <br />
     
     <span>Target heat: </span>
-    <input id="target_heat" type="range" min="0" value="8" oninput="refresh()"/>
+    <input id="target_heat" type="range" min="0" oninput="refresh()"/>
     <span id="target_flavor"></span>
     <button id="randomize" onclick="randomize()">Randomize</button>
+    <br />
+    <br />
+
+    <span>Shareable link: </span><button onclick="getUrl()">Copy to Clipboard</button>
 </body>

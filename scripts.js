@@ -154,6 +154,10 @@ function addTh(tr, el) {
 }
 
 function setup() {
+    let params = new URLSearchParams(location.search);
+    let values = decodeValues(params.get("values"));
+    let locks = decodeLocks(params.get("locks"));
+    let target = decodeTarget(params.get("target"));
     let inputs = document.getElementById("inputs")
     let max_heat = 0
     for (let i = 0; i < data.length; i++) {
@@ -174,7 +178,7 @@ function setup() {
         el_input.type = "range"
         el_input.min = 0
         el_input.max = levels.length - 1
-        el_input.value = 0
+        el_input.value = values[i]
         el_input.setAttribute("onChange", "refresh()")
         datum["el_input"] = el_input
         addTh(row, el_input)
@@ -189,6 +193,7 @@ function setup() {
 
         let el_lock = document.createElement("input")
         el_lock.type = "checkbox"
+        el_lock.checked = locks[i]
         datum["el_lock"] = el_lock
         el_lock_wrapper.appendChild(el_lock)
 
@@ -204,6 +209,7 @@ function setup() {
     }
     elements["total_heat"] = document.getElementById("total_heat")
     elements["target_heat"] = document.getElementById("target_heat")
+    elements["target_heat"].value = target
     elements["target_heat"].max = max_heat
     elements["target_flavor"] = document.getElementById("target_flavor")
     elements["randomize"] = document.getElementById("randomize")
@@ -232,7 +238,7 @@ function randomize() {
     if (solns.length == 0) {
         alert("Target heat cannot be achieved with current locked values.")
     } else {
-        let soln = solns[Math.floor(Math.random() * solns.length)]
+        let soln = solns[Math.floor(Math.random() * solns.length)].reverse()
         for (let i = 0; i < data.length; i++) {
             data[i]["el_input"].value = soln[i]
         }
@@ -259,8 +265,73 @@ function randomizeHelper(i, target, current, max) {
         let new_max = max - heats[heats.length - 1]
         let recursive_solns = randomizeHelper(i + 1, target, new_heat, new_max)
         for (let k = 0; k < recursive_solns.length; k++) {
-            solns.push([j].concat(recursive_solns[k]))
+            let soln = recursive_solns[k]
+            soln.push(j)
+            solns.push(soln)
         }
     }
     return solns
+}
+
+function getUrl() {
+    let url = window.location.href.split("?")[0]
+    let values = []
+    let locks = []
+    let target = parseInt(elements["target_heat"].value, 10)
+    for (let i = 0; i < data.length; i++) {
+        let datum = data[i]
+        values.push(parseInt(datum["el_input"].value, 10))
+        locks.push(datum["el_lock"].checked)
+    }
+    url += "?values=" + encodeValues(values)
+    url += "&locks=" + encodeLocks(locks)
+    url += "&target=" + target
+    navigator.clipboard.writeText(url)
+}
+
+function encodeValues(values) {
+    let encoded = 0
+    for (let i = 0; i < values.length; i++) {
+        encoded = encoded * 10 + values[i]
+    }
+    return encoded
+}
+
+function decodeValues(encoded) {
+    if (encoded == null) {
+        encoded = 0
+    }
+    let values = []
+    for (let i = 0; i < data.length; i++) {
+        values.push(encoded % 10)
+        encoded = Math.floor(encoded / 10)
+    }
+    return values.reverse()
+}
+
+function encodeLocks(locks) {
+    let encoded = 0
+    for (let i = 0; i < locks.length; i++) {
+        encoded = encoded * 2 + (locks[i] ? 1 : 0)
+    }
+    return encoded
+}
+
+function decodeLocks(encoded) {
+    if (encoded == null) {
+        encoded = 0
+    }
+    let locks = []
+    for (let i = 0; i < data.length; i++) {
+        locks.push((encoded % 2 == 1) ? true : false)
+        encoded = Math.floor(encoded / 2)
+    }
+    return locks
+}
+
+function decodeTarget(encoded) {
+    if (encoded == null) {
+        return 8;
+    }
+    return parseInt(encoded, 10);
 }
